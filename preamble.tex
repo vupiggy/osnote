@@ -1,0 +1,160 @@
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{graphicx}
+
+\definecolor{lightgray}{rgb}{0.90,0.90,0.90}
+
+% 中文支持
+\usepackage[slantfont,boldfont]{xeCJK}
+\usepackage{zhnumber}
+% \setCJKmainfont[BoldFont={Hiragino Sans GB W6},%
+%                 ItalicFont={FZBeiWeiKaiShu-S19S},%
+%                 ItalicFeatures={Scale=1.06}]{Hiragino Sans GB W3}%{FZBoYaSong}
+
+\setCJKmainfont[BoldFont={Hiragino Sans GB W6},%
+                ItalicFont={Kaiti SC}]{Hiragino Sans GB W3}%{FZBoYaSong}
+
+\setCJKmonofont{Kaiti SC}
+\setCJKsansfont{Kaiti SC}
+\usepackage{cjkindent}
+% \setlength{\parindent}{2em}
+
+%\setmainfont{Birka}
+\setmainfont{Minion Pro}
+\setmonofont[Scale=MatchLowercase]{Menlo}
+
+% Not working together extaritcle
+% \usepackage{sectsty}
+% \sectionfont{\huge\sffamily\bfseries}
+% \subsectionfont{\Large\sffamily\bfseries}
+% \subsubsectionfont{\large\sffamily}
+
+\usepackage[explicit]{titlesec}
+\newcommand{\sectionbreak}{\clearpage}
+
+\titleclass{\part}{top}
+\titleformat{\part}
+[display]
+{\normalfont\sffamily\bfseries\Huge}
+{\renewcommand{\thepart}%
+{\zhnumber{\arabic{part}}}%
+\hspace*{0.5em}\colorbox{black}%
+{\parbox[c][1.2cm][c]{1cm}{\centering\textcolor{white}%
+{\Huge\thepart}}}}
+{-1ex}
+{\titlerule\vspace{.2ex}\filleft\MakeUppercase{#1}}
+[\vspace{.2ex}\titlerule]
+% part tiltes spacing
+\titlespacing*{\part}{0pt}{30pt}{80pt}
+
+% Source code listing
+\usepackage{listings}
+%%% comment the line below when using ttfamily as basicstyle
+%\lstset{columns=flexible} 
+\lstset{captionpos=b}
+\lstset{backgroundcolor=\color{lightgray}}
+\lstset{frame=single}
+\lstset{framesep=4pt}
+\lstset{framerule=0pt}
+\lstset{xleftmargin=-4em}
+\lstset{lineskip=1pt}
+\lstset{linewidth=1.0\textwidth}
+\lstset{basicstyle=\small\ttfamily}
+
+\lstdefinelanguage[gas]{Assembler}{
+        morekeywords=[1]{
+                ENTRY,  END,    macro,                  %
+                je,     jne,    jz,     jnz,    jne,    %
+                jae,    push,   pop,    ret,    mov,    %
+                jmp,    call,   cmp,    add,    sub,    %
+                jmpq,   callq,  cmpq,   addq,   subq,   %
+                rax,    rbx,    rcx,    rdx,    rdi,    %
+                rsi,    r8,     r9,     r10,    r11,    %
+                r12,    r13,    r14,    r15,    movq,   %
+                pushq,  popq,	rsp,                    %
+                equ,    globl,  long,   word,   align,  %
+                b,      ldr,    swi,    subs,   stmia,  %
+                mrs,    msr,    and,    add,    movs,   %
+                macro,  endm,	jc,	btr,    asm,    %
+                volatile,	offsetof,               %
+        },
+}[keywords,comments,strings]
+\newcommand{\inputasmlisting}[3]{
+        \lstinputlisting[language={[gas]Assembler},
+                         commentstyle=\small\textit,
+                         caption={#2},
+                         label={#3}]{#1}}
+                         
+\newcommand{\inputclisting}[3]{
+        \lstinputlisting[language={C},
+                         commentstyle=\textit,
+                         caption={#2},
+                         showstringspaces=false,
+                         label={#3}]{#1}}
+
+\newcommand{\inputpylisting}[3]{
+        \lstinputlisting[language={Python},
+                         commentstyle=\textit,
+                         caption={#2},
+                         showstringspaces=false,
+                         label={#3}]{#1}}
+
+\newcommand{\inputcclisting}[3]{
+        \lstinputlisting[language={Java},
+          		 commentstyle=\small\texttt,
+                         caption={#2},
+                         showstringspaces=false,
+                         label={#3}]{#1}}
+
+\newcommand{\inputjlisting}[3]{
+        \lstinputlisting[language={Java},
+          		 commentstyle=\small\textit,
+                         caption={#2},
+                         showstringspaces=false,
+                         label={#3}]{#1}}
+
+\newcommand{\inputshlisting}[3]{
+        \lstinputlisting[language={Bash},
+          		 commentstyle=\small\textit,
+                         caption={#2},
+                         showstringspaces=false,
+                         label={#3}]{#1}}
+
+\usepackage{hyperref}
+ \hypersetup{
+  pdfencoding=auto,
+  pdfauthor={Luke Huang},
+  pdftitle={计算机科学基础知识},
+  colorlinks,
+  linkcolor=blue,
+  pdfstartview=FitH,
+  bookmarksnumbered=true,
+  bookmarksopen=true,
+}
+
+\usepackage{tocloft}
+\setlength\cftbeforesecskip{2pt}
+%\renewcommand\cftsecafterpnum{\vskip-5pt}
+
+\linespread{1.3} % 1.5x linespread
+\addtolength{\parskip}{1.3ex}
+\addtolength{\textwidth}{0.75in}
+\addtolength{\hoffset}{-0.375in}
+
+\usepackage[inline,shortlabels]{enumitem}
+\newenvironment{qna}{\begin{description}[style=nextline]}{\end{description}}
+
+\usepackage[fleqn]{amsmath}
+\usepackage{amssymb}
+
+\newcommand{\argu}[1]{\,\texttt{#1}\,}
+\newcommand{\ins}[1]{\,\texttt{#1}\,}
+\newcommand{\reg}[1]{\,\texttt{#1}\,}
+\newcommand{\cmd}[1]{\,\texttt{#1}\,}
+\newcommand{\func}[1]{\,\texttt{#1()}\,}
+\newcommand{\struct}[1]{\,\texttt{#1}\,}
+\newcommand{\hex}[1]{\,\texttt{#1}\,}
+\newcommand\XOR{\mathbin{\char`\^}}
+
+\renewcommand{\contentsname}{目\quad 录}
+
+\usepackage{fancyvrb}

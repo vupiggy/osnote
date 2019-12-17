@@ -1,0 +1,193 @@
+\subsection{虚拟文件系统}
+Linux虚拟文件系统隐藏底层物理文件系统的实现，
+把支持的所有文件系统通过一个通用文件模型（{\em common file model}）
+严格地按传统{\sc Unix}方式呈现给应用层。
+其实现的最主要思想是将文件系统的各个部分封装为对象，
+对文件系统各部分的操作则通过函数指针的方式声明为该对象的抽象方法，
+方法的具体实现由物理文件系统完成。
+通用文件系统模型主要的对象有：
+
+\begin{itemize}
+\item[{\em super block}]：这类对象用于描述已挂载的文件系统，
+  如果是磁盘文件系统，
+  一般对应于存储在磁盘某个固定位置的用于描述整个文件系统的控制块
+  （{\em filesystem control block}）
+\item[{\em inode}]：一个inode类型对象描述唯一的一个文件，
+  如果是磁盘文件系统，
+  它对应存储在磁盘上的文件的元数据，
+  即文件控制块（{\em file control block}），
+  每一个inode有一个唯一的标识号
+\item[{\em dentry}]：这类对象在一条目录项（文件名）和一个文件之间建立关联，
+  这种关联在磁盘文件系统中持久存储在磁盘中，
+\item[{\em file}]：这类对象描述某个进程打开的文件，
+  用于完成进程和打开文件之间的交互，
+  只存在于内核内存中。
+  每一个打开的文件都有一个进程内唯一号，
+  称为文件描述子（{\em file descriptor, fd}），
+  这个唯一号用于索引文件对象数组。
+\end{itemize}
+
+这些对象的联接关系图\,\ref{fig:vfs_obj}：
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=\textwidth]{fig/vfs_objects.pdf}
+  \caption{虚拟文件系统各对象关系}
+  \label{fig:vfs_obj}
+\end{figure}
+
+\subsubsection{Superblock}
+Superblock是整个文件系统的控制数据结构，
+内存中结构的某些域在磁盘上有永久存储的映像。
+Linux超级块由\struct{super\_block}表示，
+其中几个重要的域包括
+\struct{s\_blocksize}（文件系统块大小）、
+\struct{s\_type}（文件系统类型描述子）、
+\struct{s\_maxbytes}（最大文件尺寸）、
+\struct{s\_dirty}（改动过的inode链表）、
+\struct{s\_op}（超级块方法）、
+\struct{s\_fs\_info}（对应物理文件系统超级块信息）等等。
+出于效率考虑，
+物理文件系统超级块\struct{s\_fs\_info}通常会在内存中缓存，
+一旦出现对超级块的改动，
+域\struct{s\_dirt}被置，
+超级块在未来某个时候会被更新到磁盘上。
+
+超级块的方法除了对超级块本身的操作
+（\func{put\_super}、\func{write\_super}）之外，
+最重要的就是对inode的分配、释放、和修改
+（\func{alloc\_inode}、\func{destroy\_inode}、
+  \func{dirty\_inode}、\func{write\_inode}）等等。
+有趣的是超级块方法中没有从磁盘读入超级块的\func{get\_sb}，
+这其实是合逻辑的，
+因为超级块的读入显然要先于超级块对象存在，
+即需要一层逻辑处于超级块之外的软件完成将超级块从磁盘读入，
+这一功能由\struct{filesystem}类型的\func{get\_sb}方法完成。
+
+\subsubsection{inode}
+inode对象是文件的控制块，
+和文件一一对应，
+磁盘文件系统的inode显然需要永久存储映像。
+重要的域如下表所示：
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular*}{0.75\textwidth}{lll}
+    \hline
+    类型 & 域 & 描述\\  
+    \hline
+    \struct{unsigned long} & \struct{i\_ino} & inode number\\
+    \struct{struct timespec} & \struct{i\_atime} & 最后访问时间\\
+    \struct{struct timespec} & \struct{i\_mtime} & 最后写入时间\\
+    \struct{struct timespec} & \struct{i\_ctime} & 最后修改时间\\
+    \struct{unsigned long} & \struct{i\_blksize} & 文件块尺寸\\
+    \struct{unsigned long} & \struct{i\_blocks} & 文件块数\\
+    \struct{unsigned long} & \struct{i\_bytes} & 最后一个块的文件有效字节数\\
+    \hline
+  \end{tabular*}
+\end{table}
+
+\subsection{ext2/3}
+
+\input{zfs_overview}
+
+\input{zfs_ondisk}
+
+\input{zfs_io}
+
+\subsubsection{Solaris fd space}
+随着进程打开关闭文件，
+内核时不时分配释放fd，
+fd空间就会出现很多空洞。
+由于历史原因，
+打开文件分配fd时总是从当前可用的fd中找最小的那一个，
+要快速地从中找出第一个可用的fd是一个挑战。
+显然进程的fd空间[0\dots {\sc max\_fd}]可看作一棵完全二叉检索树的中序遍历，
+找最小fd的过程可看作遍历二叉树在其中找一个最小的空闲节点。
+方法是每个节点维护以该节点包括它子集的右子树中已分配的fd数，
+通过判断当前树是否完全和右子树已分配节点数可以决定搜寻方向。
+巧妙地利用二进制数的性质可以快速计算父子以及当树完全时某子树的节点数。
+这样由[0\dots {\sc max\_fd}]数组表示完全二叉检索树有以下一系列属性：
+
+\begin{enumerate}
+\item 树中节点的最低被置位的位置指示该节点位于树中的第几层，
+  譬如x1位于最底层 ，
+  x10节点位于树的第一层，
+  并且同一层的节点值从左向右递增；
+  
+\item 节点的右子树的节点包括它本身的个数（$csize$）
+  等于将该节点值仅保留最低被置位所得的值，
+  譬如x10右子树的所有节点数$csize(\text{x10})$为2；
+  
+\item 节点$n$的最近左祖先（即$n$位于它的右子树中）
+  $lparent$等于清除该节点的最低被置位，
+  因为$lparent(n)$是清除最低被置位，
+  而$csize(n)$是清除除最低被置位外的所有位，
+  所以$lparent(n) = n - csize(n)$；
+  
+\item 最近的右祖先$rparent(n) = n + csize(n)$
+
+\item 任意内部节点，
+  子和父值之差为$csize(parent) / 2$。
+\end{enumerate}
+
+根据：
+\begin{eqnarray}
+  n &=& \textit{xxxx10}\dots{\it 0}\\
+  n - 1 &=& \textit{xxxx01}\dots{\it 1}\\
+  n \;\&\; (n - 1) &=& \textit{xxxx00}\dots{\it 0}\\
+  n \,\mid\, (n - 1) &=& \textit{xxxx11}\dots{\it 1}\\
+  n \,\XOR\, (n - 1) &=& \textit{000011}\dots{\it 1}
+\end{eqnarray}
+
+可以快速地计算出：
+\begin{eqnarray}
+  csize(n) &=& (n - 1) \,\XOR\, (n \,\mid\, (n - 1))\\
+  lparent(n) &=& n \;\&\; (n - 1)\\
+  rparent(n) &=& (n \,\mid\, (n − 1)) + 1
+\end{eqnarray}
+
+考虑到fd从0开始，
+公式中变量值由$n$变为$n' = n - 1$，
+并且计算出的fd值要减去1，
+于是真正实现中使用的公式为：
+
+\begin{eqnarray}
+  csize(n) &=& n \,\XOR\, (n \,\mid\, (n + 1))\\
+  lparent(n) &=& n \;\&\; (n + 1) - 1\\
+  rparent(n) &=& (n \,\mid\, (n + 1))
+\end{eqnarray}
+
+具体到代码实现，
+\struct{proc\_t.p\_user.u\_finfo.fi\_list}就是进程的fd空间数组，
+数组元素类型为\struct{uf\_entry}，
+数组元素逻辑上看作二叉树中的一个节点，
+数组索引$n$就是节点值，
+域\struct{uf\_alloc}被用于存储节点$n$当前右子树（包括它自己）的总节点数，
+如果\struct{uf\_alloc}不等于$csize(n)$，
+说明在它的右子树里至少有一个fd可用。
+
+函数\func{fd\_find}接受一个minfd参数，
+完成搜寻$\ge\,$minfd的fd中最小的那一个。
+打开文件时通常传入0作为minfd参数。
+搜寻的过程如下：
+\begin{enumerate}
+\item 从以minfd为根的树找起，
+  计算$csize(minfd)$，
+  和\struct{fi\_list[minfd].uf\_alloc}比较，
+  如果不等，
+  说明在minfd的右子树下可以找到一个空闲的fd，这一步结束；
+  否则上溯到minfd的右祖先，
+  继续这一步直至找到某个节点fd满足$csize(fd)$不等于
+  \struct{fi\_list[fd].uf\_alloc}；
+\item 从上一步得到的节点为根，
+  开始搜寻树中最小的空闲fd，
+  查左子树而后右子树。
+\end{enumerate}
+
+\inputclisting{snippet/fio.c}
+              {fd space management}{fdspace}
+
+\func{fd\_find}只负责找到一个可用fd值，
+\func{fd\_reserve}真正进行fd的分配或释放工作，
+完成之后函数要从节点一直上溯到最左祖先，
+更新它们的右子树已分配节点数。

@@ -1,0 +1,84 @@
+.\"-*- nroff -*-
+
+.PS
+
+r=0.2
+c=0.9
+pi=3.14159265
+d45=pi/4
+
+C0:circle rad r
+L0:line from C0.n up 1.25 * r
+right
+
+line from last circle.e c
+circle rad r
+
+line from last circle.e c / 3
+move 0.05
+line c / 3 - 0.12 dotted 0.08 thickness 1.8
+move 0.05
+line c / 3
+
+circle rad r
+
+line from last circle.e c
+circle rad r
+
+L:line from last circle.e c + r
+X:circle at (L.end.x - r + r, L.end.y - 5 * r) rad 5 * r color "white"
+
+for i = 0 to 7 do {
+  if i == 1 || i == 6 then {
+    arc cw from (L.end.x + 5 * r * sin(d45 * i),		\
+		 L.end.y - 5 * r * (1 - cos(d45 * i)))		\
+           to   (L.end.x + 5 * r * sin(d45 * (i + 1)),		\
+		 L.end.y - 5 * r * (1 - cos(d45 * (i + 1))))	\
+           with .c at (L.end.x, L.end.y - 5 * r) dotted 0.125 thickness 1.8
+  } else {
+    arc cw from (L.end.x + 5 * r * sin(d45 * i),		\
+		 L.end.y - 5 * r * (1 - cos(d45 * i)))		\
+           to   (L.end.x + 5 * r * sin(d45 * (i + 1)),		\
+		 L.end.y - 5 * r * (1 - cos(d45 * (i + 1))))	\
+           with .c at (L.end.x, L.end.y - 5 * r)
+  }
+}
+
+for i = 1 to 8 do {
+  circle with .c at (L.end.x + 5 * r * sin(d45 * i),		\
+                     L.end.y - 5 * r * (1 - cos(d45 * i)))	\
+    rad r color "white" outline "black"
+
+  if i == 3 then {
+    L1:line from last circle.nw up r * sin(45) left r * sin(45)
+  }
+
+  if i == 5 then {
+    L2:line from last circle.ne up r * sin(45) right r * sin(45)
+  }
+
+  if i == 8 then {
+    L3:line from last circle.s down r
+    arc <--> rad 3.5 * r from L1.center to L3.center		\
+        with .c at (L.end.x, L.end.y - 5 * r) chop
+    arc cw <--> rad 3.5 * r from L2.center to L3.center		\
+        with .c at (L.end.x, L.end.y - 5 * r) chop
+
+    L4:line from last circle.n up 1.25 * r
+
+    C1:circle at (X.c.x - 3.5 * r * cos(d45 / 2),	\
+                  X.c.y + 3.5 * r * sin(d45 / 2))	\
+                  rad 0.6 * r color "white"
+    "\s+2z\s-2" at C1.c
+
+    C2:circle at (X.c.x + 3.5 * r * cos(d45 / 2),	\
+                  X.c.y + 3.5 * r * sin(d45 / 2))	\
+                   rad 0.6 * r color "white"
+    "\s+2y\s-2" at C2.c
+    LX:line from L0.center to L4.center <-->
+    CX:circle at LX.center rad 0.4 * r color "white"
+    "\s+2x\s-2" at LX.center
+  }
+}
+
+.PE
