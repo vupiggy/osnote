@@ -1,3 +1,5 @@
+\section{永久存储}
+
 \subsection{虚拟文件系统}
 Linux虚拟文件系统隐藏底层物理文件系统的实现，
 把支持的所有文件系统通过一个通用文件模型（{\em common file model}）
@@ -73,7 +75,7 @@ inode对象是文件的控制块，
   \centering
   \begin{tabular*}{0.755\textwidth}{lll}
     \hline
-    类型 & 域 & 描述\\  
+    类型 & 域 & 描述\\
     \hline
     \struct{unsigned long} & \struct{i\_ino} & inode number\\
     \struct{struct timespec} & \struct{i\_atime} & 最后访问时间\\
@@ -113,17 +115,17 @@ fd空间就会出现很多空洞。
   譬如x1位于最底层 ，
   x10节点位于树的第一层，
   并且同一层的节点值从左向右递增；
-  
+
 \item 节点的右子树的节点包括它本身的个数（$csize$）
   等于将该节点值仅保留最低被置位所得的值，
   譬如x10右子树的所有节点数$csize(\text{x10})$为2；
-  
+
 \item 节点$n$的最近左祖先（即$n$位于它的右子树中）
   $lparent$等于清除该节点的最低被置位，
   因为$lparent(n)$是清除最低被置位，
   而$csize(n)$是清除除最低被置位外的所有位，
   所以$lparent(n) = n - csize(n)$；
-  
+
 \item 最近的右祖先$rparent(n) = n + csize(n)$
 
 \item 任意内部节点，

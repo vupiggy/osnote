@@ -1,0 +1,34 @@
+\begin{tikzpicture}[%
+  > = latex,
+  every node/.style = {
+    font=\sffamily,
+    inner sep = 0pt, outer sep = 0pt,
+    fill = lightgray,
+  }
+]
+  \input {colordef.tex}
+  \node (index)  [draw, minimum width = 3.2cm, minimum height = 0.5cm, drop shadow] {Index};
+  \node (ti)     [draw, minimum width = 0.8cm, minimum height = 0.5cm, drop shadow, right = 0cm of index.east] {TI};
+  \node (colon)  [right = 0.35cm of ti.east, fill = none] {\Huge{\bf :}};
+  \node (logical)[fill = none, below = 0.35cm of colon.south] {\it logical address};
+  \node (offset) [draw, minimum width = 4cm, minimum height = 0.5cm, drop shadow, right = 0.35cm of colon.east] {offset};
+  \node (dtr)    [draw, minimum width = 4cm, minimum height = 0.5cm, above right = 1cm and -1cm of ti.north, drop shadow] {gdtr or ldtr};
+  \draw [densely dotted, ->] ($(ti.north)$) -- ++(0, 1cm);
+  \node (mul)    [draw, circle, radius=0.2cm, above = 0.4cm of index.north] {\footnotesize $\times$};
+  \draw [->] (index.north) -- (mul.south);
+  \node (plus1)  [draw, circle, radius=0.2cm, above = 0.4cm of mul.north] {\footnotesize $+$};
+  \draw [->] (mul.north) -- (plus1.south);
+  \draw [->] (dtr.west) -- (plus1.east);
+  \node (eight)  [above left = 0.3cm and 0.3cm of mul.north west, outer sep = 2pt] {\footnotesize $8$};
+  \draw [->] (eight.south) .. controls ($(eight.south) + (-0.1cm, -0.3cm)$) and ($(mul.west) + (-0.3cm, -0.1cm)$) .. (mul.west);
+  \node (table)  [draw, minimum width = 2cm, minimum height = 2.5cm, outer sep = 2pt, drop shadow, rounded corners = 3pt, fill = white, above right = 0.75cm and -2pt of dtr.north west, label=above:{gdt or ldt}] {};
+  \node (desr)   [draw, minimum width = 2cm, minimum height = 0.5cm, above = 1cm of table.south] {descriptor};
+  \draw [->, densely dotted, rounded corners = 3pt]     ($(dtr.west) + (-0.4cm, 0)$) |- ($(table.south west) + (2pt, 1pt)$);
+  \draw [->, rounded corners = 3pt] (plus1.north) |- (desr.west);
+  \node (plus2)  [draw, circle, radius=0.2cm, above = 3.32cm of offset.north] {$+$};
+  \draw [->] (offset.north) -- (plus2.south);
+  \draw [->] (desr.east) -- (plus2.west);
+  \node (laddr)  [above = 1cm of plus2.north, fill = none, minimum height = 0.5cm] {\it linear address};
+  %\draw [->] (plus2.north) -- ++(0cm, 1cm);
+  \draw [->] (plus2.north) -- (laddr.south);
+\end{tikzpicture}

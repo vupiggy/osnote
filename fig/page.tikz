@@ -1,0 +1,61 @@
+\begin{tikzpicture}[%
+  > = latex,
+  every node/.style = {
+    draw,
+    font=\sffamily,
+    inner sep = 0pt, outer sep = 0pt,
+    fill = lightgray,
+    minimum height = 0.6cm,
+  },
+  number/.style = {
+    draw = none, fill = none,
+    minimum height = 0.5cm
+  },
+]
+\input {colordef.tex}
+
+\node (dir)    [minimum width = 6cm, drop shadow]
+      {Directory};
+\node [number, above right = 0.05cm and 0cm of dir.north west] {31};
+
+\node (table)  [minimum width = 6cm, right = 0cm of dir.east, drop shadow]
+      {Table};
+\node [number, above right = 0.05cm and 0cm of table.north west] {21};
+
+\node (offset) [minimum width = 7.2cm, right = 0cm of table.east, drop shadow]
+      {Offset};
+\node [number, above right = 0.05cm and 0cm of offset.north west] {11};
+\node [number, above left  = 0.05cm and 0cm of offset.north east] {0};
+
+\node (cr3)    [minimum width = 2cm, below = 6cm of dir.south west, drop shadow]
+      {cr3};
+
+\node (pd)     [minimum width = 2.7cm, minimum height = 3cm, drop shadow, above right = 0cm and 3cm of cr3.east,%
+                label=below:{Page Directory}, rounded corners = 4pt] {};
+\draw [->] (cr3.east) -- (pd.south west);
+\node (plus1)  [draw, circle, radius=0.1cm, above right = 1.035cm and 1.3cm of cr3.east, inner sep=0, outer sep=0] {$+$};
+
+\node (pde)    [draw, minimum width = 2.7cm, minimum height = 0.5cm, above = 1cm of pd.south] {Directory Entry};
+\draw [->] (plus1.east) -- (pde.west);
+\draw [->, rounded corners = 4pt] (cr3.east) -| (plus1.south);
+\draw [<-] (plus1.north) -- ++(0, 4.735cm);
+
+\node (tbl)    [minimum width = 2.7cm, minimum height = 3cm, drop shadow, above right = 0cm and 3cm of pde.east,%
+                label=below:{Page Table}, rounded corners = 4pt] {};
+\draw [->] (pde.east) -- (tbl.south west);
+\node (plus2)  [draw, circle, radius=0.1cm, above right = 1cm and 1.25cm of pde.east, inner sep=0, outer sep=0] {$+$};
+\draw [->, rounded corners = 4pt] (pde.east) -| (plus2.south);
+\node (pte)    [draw, minimum width = 2.7cm, minimum height = 0.5cm, above = 0.96cm of tbl.south] {Table Entry};
+\draw [->] (plus2) -- (pte.west);
+\draw [<-] (plus2.north) -- ++(0, 3.535cm);
+
+\node (pg)     [minimum width = 2.7cm, minimum height = 3cm, drop shadow, above right = 0cm and 3cm of pte.east,%
+                label=below:{Page}, rounded corners = 4pt] {};
+\draw [->] (pte.east) -- (pg.south west);
+\node (plus3)  [draw, circle, radius=0.1cm, above right = 1.4cm and 1.25cm of pte.east, inner sep=0, outer sep=0] {$+$};
+\node (data)   [draw, minimum width = 2.7cm, minimum height = 0.5cm, above = 1.36cm of pg.south] {Data in RAM};
+\draw [->] (plus3) -- (data.west);
+\draw [->, rounded corners = 4pt] (pte.east) -| (plus3.south);
+\draw [<-] (plus3) -- ++(0, 2.235cm);
+
+\end{tikzpicture}
