@@ -1438,7 +1438,7 @@ Linux内核提供sendfile系统调用，
 
 需要更进一步提高效率，
 从文件系统缓冲区向socket缓冲区的拷贝需要想办法消除。
-这就需要硬件支持scatter/gather I/O的功能，
+这就需要硬件支持\emph{scatter/gather I/O}的功能，
 如本例中，
 如果网卡的发送缓冲区可以是分散的内存位置，
 而且网卡可以通过一次DMA操作即可将这分散的数据整合起来发送，
@@ -1487,7 +1487,7 @@ etc.}
 \end{itemize}
 其它情况将引发{\em kernel oops}，
 并且内核将发送\verb|SIGKILL|杀死用户进程。
-细节详见\verb|do_page_fault|函数。
+细节详见\path{do_page_fault}函数。
 
 \verb|fixup|文本段专门为了处理内核代码访问用户空间地址而设立。
 所有需要访问用户空间的代码（大多是系统调用）使用统一的接口，
@@ -1533,7 +1533,6 @@ Linux内核种有些函数以双下划线为前缀示意直接调用该函数要
     一个粗糙的宏定义如下，
     这个宏定义存在于无数的程序中，
     包括一些驱动程序，
-    \newpage
     \inputclisting{src/wrong_min.c}
                   {naive min macro}{wmin}
     参数带着括号使用，
@@ -1662,7 +1661,7 @@ Linux下Buddy System的思路如下：
 
 \begin{figure}[!ht]
 \centering
-\includegraphics[scale=0.75]{fig/slab_color}
+\includegraphics[scale=0.72]{fig/slab_color}
 \caption{Slab Coloring}
 \label{fig:slabc}
 \end{figure}
